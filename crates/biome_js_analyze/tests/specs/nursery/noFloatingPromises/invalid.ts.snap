@@ -311,8 +311,12 @@ type Props = {
 	a: string;
 	returnsPromise: () => Promise<void>;
 };
-async function testCallingReturnsPromise(props: Props) {
+type ReadonlyProps = Readonly<{
+	returnsPromise: () => Promise<void>;
+}>
+async function testCallingReturnsPromise(props: Props, readonlyProps: ReadonlyProps) {
 	props.returnsPromise().then(() => {});
+	readonlyProps.returnsPromise().then(() => {});
 }
 const testDestructuringAndCallingReturnsPromise = async ({
 	returnsPromise,
@@ -1481,125 +1485,146 @@ invalid.ts:301:2 lint/nursery/noFloatingPromises  FIXABLE  ━━━━━━━
 ```
 
 ```
-invalid.ts:309:2 lint/nursery/noFloatingPromises  FIXABLE  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+invalid.ts:312:2 lint/nursery/noFloatingPromises  FIXABLE  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
   i A "floating" Promise was found, meaning it is not properly handled and could lead to ignored errors or unexpected behavior.
   
-    307 │ };
-    308 │ async function testCallingReturnsPromise(props: Props) {
-  > 309 │ 	props.returnsPromise().then(() => {});
+    310 │ }>
+    311 │ async function testCallingReturnsPromise(props: Props, readonlyProps: ReadonlyProps) {
+  > 312 │ 	props.returnsPromise().then(() => {});
         │ 	^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-    310 │ }
-    311 │ const testDestructuringAndCallingReturnsPromise = async ({
+    313 │ 	readonlyProps.returnsPromise().then(() => {});
+    314 │ }
   
   i This happens when a Promise is not awaited, lacks a `.catch` or `.then` rejection handler, or is not explicitly ignored using the `void` operator.
   
   i Unsafe fix: Add await operator.
   
-    309 │ → await·props.returnsPromise().then(()·=>·{});
+    312 │ → await·props.returnsPromise().then(()·=>·{});
         │   ++++++                                      
 
 ```
 
 ```
-invalid.ts:314:2 lint/nursery/noFloatingPromises  FIXABLE  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+invalid.ts:313:2 lint/nursery/noFloatingPromises  FIXABLE  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
   i A "floating" Promise was found, meaning it is not properly handled and could lead to ignored errors or unexpected behavior.
   
-    312 │ 	returnsPromise,
-    313 │ }: Props) => {
-  > 314 │ 	returnsPromise();
-        │ 	^^^^^^^^^^^^^^^^^
-    315 │ };
-    316 │ async function testPassingReturnsPromiseDirectly(
+    311 │ async function testCallingReturnsPromise(props: Props, readonlyProps: ReadonlyProps) {
+    312 │ 	props.returnsPromise().then(() => {});
+  > 313 │ 	readonlyProps.returnsPromise().then(() => {});
+        │ 	^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    314 │ }
+    315 │ const testDestructuringAndCallingReturnsPromise = async ({
   
   i This happens when a Promise is not awaited, lacks a `.catch` or `.then` rejection handler, or is not explicitly ignored using the `void` operator.
   
   i Unsafe fix: Add await operator.
   
-    314 │ → await·returnsPromise();
-        │   ++++++                 
+    313 │ → await·readonlyProps.returnsPromise().then(()·=>·{});
+        │   ++++++                                              
 
 ```
 
 ```
-invalid.ts:319:2 lint/nursery/noFloatingPromises  FIXABLE  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+invalid.ts:318:2 lint/nursery/noFloatingPromises  FIXABLE  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
   i A "floating" Promise was found, meaning it is not properly handled and could lead to ignored errors or unexpected behavior.
   
-    317 │ 	returnsPromise: () => Promise<void>
-    318 │ ) {
-  > 319 │ 	returnsPromise();
+    316 │ 	returnsPromise,
+    317 │ }: Props) => {
+  > 318 │ 	returnsPromise();
         │ 	^^^^^^^^^^^^^^^^^
-    320 │ }
-    321 │ async function testCallingReturnsPromiseFromObject(props: {
+    319 │ };
+    320 │ async function testPassingReturnsPromiseDirectly(
   
   i This happens when a Promise is not awaited, lacks a `.catch` or `.then` rejection handler, or is not explicitly ignored using the `void` operator.
   
   i Unsafe fix: Add await operator.
   
-    319 │ → await·returnsPromise();
+    318 │ → await·returnsPromise();
         │   ++++++                 
 
 ```
 
 ```
-invalid.ts:324:2 lint/nursery/noFloatingPromises  FIXABLE  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+invalid.ts:323:2 lint/nursery/noFloatingPromises  FIXABLE  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
   i A "floating" Promise was found, meaning it is not properly handled and could lead to ignored errors or unexpected behavior.
   
-    322 │ 	returnsPromise: () => Promise<void>;
-    323 │ }) {
-  > 324 │ 	props.returnsPromise();
+    321 │ 	returnsPromise: () => Promise<void>
+    322 │ ) {
+  > 323 │ 	returnsPromise();
+        │ 	^^^^^^^^^^^^^^^^^
+    324 │ }
+    325 │ async function testCallingReturnsPromiseFromObject(props: {
+  
+  i This happens when a Promise is not awaited, lacks a `.catch` or `.then` rejection handler, or is not explicitly ignored using the `void` operator.
+  
+  i Unsafe fix: Add await operator.
+  
+    323 │ → await·returnsPromise();
+        │   ++++++                 
+
+```
+
+```
+invalid.ts:328:2 lint/nursery/noFloatingPromises  FIXABLE  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  i A "floating" Promise was found, meaning it is not properly handled and could lead to ignored errors or unexpected behavior.
+  
+    326 │ 	returnsPromise: () => Promise<void>;
+    327 │ }) {
+  > 328 │ 	props.returnsPromise();
         │ 	^^^^^^^^^^^^^^^^^^^^^^^
-    325 │ }
-    326 │ async function testDestructuringAndCallingReturnsPromiseFromRest({
+    329 │ }
+    330 │ async function testDestructuringAndCallingReturnsPromiseFromRest({
   
   i This happens when a Promise is not awaited, lacks a `.catch` or `.then` rejection handler, or is not explicitly ignored using the `void` operator.
   
   i Unsafe fix: Add await operator.
   
-    324 │ → await·props.returnsPromise();
+    328 │ → await·props.returnsPromise();
         │   ++++++                       
 
 ```
 
 ```
-invalid.ts:330:2 lint/nursery/noFloatingPromises  FIXABLE  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+invalid.ts:334:2 lint/nursery/noFloatingPromises  FIXABLE  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
   i A "floating" Promise was found, meaning it is not properly handled and could lead to ignored errors or unexpected behavior.
   
-    328 │ 	...rest
-    329 │ }: Props) {
-  > 330 │ 	rest
+    332 │ 	...rest
+    333 │ }: Props) {
+  > 334 │ 	rest
         │ 	^^^^
-  > 331 │ 		.returnsPromise()
-  > 332 │ 		.then(() => {})
-  > 333 │ 		.finally(() => {});
+  > 335 │ 		.returnsPromise()
+  > 336 │ 		.then(() => {})
+  > 337 │ 		.finally(() => {});
         │ 		^^^^^^^^^^^^^^^^^^^
-    334 │ }
-    335 │ 
+    338 │ }
+    339 │ 
   
   i This happens when a Promise is not awaited, lacks a `.catch` or `.then` rejection handler, or is not explicitly ignored using the `void` operator.
   
   i Unsafe fix: Add await operator.
   
-    330 │ → await·rest
+    334 │ → await·rest
         │   ++++++    
 
 ```
 
 ```
-invalid.ts:336:1 lint/nursery/noFloatingPromises ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+invalid.ts:340:1 lint/nursery/noFloatingPromises ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
   i A "floating" Promise was found, meaning it is not properly handled and could lead to ignored errors or unexpected behavior.
   
-    334 │ }
-    335 │ 
-  > 336 │ import("some-module").then(() => {});
+    338 │ }
+    339 │ 
+  > 340 │ import("some-module").then(() => {});
         │ ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-    337 │ 
-    338 │ returnPromiseResult();
+    341 │ 
+    342 │ returnPromiseResult();
   
   i This happens when a Promise is not awaited, lacks a `.catch` or `.then` rejection handler, or is not explicitly ignored using the `void` operator.
   
@@ -1607,16 +1632,16 @@ invalid.ts:336:1 lint/nursery/noFloatingPromises ━━━━━━━━━━�
 ```
 
 ```
-invalid.ts:338:1 lint/nursery/noFloatingPromises ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+invalid.ts:342:1 lint/nursery/noFloatingPromises ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
   i A "floating" Promise was found, meaning it is not properly handled and could lead to ignored errors or unexpected behavior.
   
-    336 │ import("some-module").then(() => {});
-    337 │ 
-  > 338 │ returnPromiseResult();
+    340 │ import("some-module").then(() => {});
+    341 │ 
+  > 342 │ returnPromiseResult();
         │ ^^^^^^^^^^^^^^^^^^^^^^
-    339 │ returnAliasedPromiseResult();
-    340 │ 
+    343 │ returnAliasedPromiseResult();
+    344 │ 
   
   i This happens when a Promise is not awaited, lacks a `.catch` or `.then` rejection handler, or is not explicitly ignored using the `void` operator.
   
@@ -1624,15 +1649,15 @@ invalid.ts:338:1 lint/nursery/noFloatingPromises ━━━━━━━━━━�
 ```
 
 ```
-invalid.ts:339:1 lint/nursery/noFloatingPromises ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+invalid.ts:343:1 lint/nursery/noFloatingPromises ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
   i A "floating" Promise was found, meaning it is not properly handled and could lead to ignored errors or unexpected behavior.
   
-    338 │ returnPromiseResult();
-  > 339 │ returnAliasedPromiseResult();
+    342 │ returnPromiseResult();
+  > 343 │ returnAliasedPromiseResult();
         │ ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-    340 │ 
-    341 │ function returnMaybePromise(): Promise<void> | undefined {
+    344 │ 
+    345 │ function returnMaybePromise(): Promise<void> | undefined {
   
   i This happens when a Promise is not awaited, lacks a `.catch` or `.then` rejection handler, or is not explicitly ignored using the `void` operator.
   
@@ -1640,15 +1665,15 @@ invalid.ts:339:1 lint/nursery/noFloatingPromises ━━━━━━━━━━�
 ```
 
 ```
-invalid.ts:349:1 lint/nursery/noFloatingPromises ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+invalid.ts:353:1 lint/nursery/noFloatingPromises ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
   i A "floating" Promise was found, meaning it is not properly handled and could lead to ignored errors or unexpected behavior.
   
-    347 │ }
-    348 │ 
-  > 349 │ returnMaybePromise();
+    351 │ }
+    352 │ 
+  > 353 │ returnMaybePromise();
         │ ^^^^^^^^^^^^^^^^^^^^^
-    350 │ 
+    354 │ 
   
   i This happens when a Promise is not awaited, lacks a `.catch` or `.then` rejection handler, or is not explicitly ignored using the `void` operator.
   

@@ -305,8 +305,12 @@ type Props = {
 	a: string;
 	returnsPromise: () => Promise<void>;
 };
-async function testCallingReturnsPromise(props: Props) {
+type ReadonlyProps = Readonly<{
+	returnsPromise: () => Promise<void>;
+}>
+async function testCallingReturnsPromise(props: Props, readonlyProps: ReadonlyProps) {
 	props.returnsPromise().then(() => {});
+	readonlyProps.returnsPromise().then(() => {});
 }
 const testDestructuringAndCallingReturnsPromise = async ({
 	returnsPromise,

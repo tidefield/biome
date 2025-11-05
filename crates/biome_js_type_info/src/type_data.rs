@@ -1416,6 +1416,12 @@ impl TypeReferenceQualifier {
             excluded_binding_id: self.excluded_binding_id,
         }
     }
+
+    pub fn is_readonly(&self) -> bool {
+        self.path
+            .identifier()
+            .map_or(false, |id| id.text() == "Readonly")
+    }
 }
 
 #[derive(Copy, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]

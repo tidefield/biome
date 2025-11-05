@@ -1,0 +1,44 @@
+---
+source: crates/biome_js_type_info/tests/utils.rs
+expression: content
+---
+## Input
+
+```ts
+const obj: Readonly<{ field: () => Promise<void> }> = {
+	name: () => new Promise.resolve(),
+};
+
+```
+
+## Result
+
+```
+obj => instanceof Global TypeId(5)
+
+```
+
+## Registered types
+
+```
+Global TypeId(0) => instanceof Global TypeId(4)
+
+Global TypeId(1) => sync Function {
+  accepts: {
+    params: []
+    type_args: []
+  }
+  returns: Global TypeId(0)
+}
+
+Global TypeId(2) => Object {
+  prototype: No prototype
+  members: ["field": Global TypeId(1)]
+}
+
+Global TypeId(3) => instanceof Global TypeId(5)
+
+Global TypeId(4) => instanceof Promise<void>
+
+Global TypeId(5) => instanceof Readonly<Global TypeId(2)>
+```

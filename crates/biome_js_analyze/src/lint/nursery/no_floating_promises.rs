@@ -179,7 +179,8 @@ impl Rule for NoFloatingPromises {
         let ty = ctx.type_of_expression(&expression);
 
         // Uncomment the following line for debugging convenience:
-        //let printed = format!("type of {expression:?} = {ty:?}");
+        // let printed = format!("type of {expression:?} = {ty:?}");
+
         if ty.is_array_of(|ty| ty.is_promise_instance()) {
             return Some(NoFloatingPromisesState::ArrayOfPromises);
         }

@@ -74,7 +74,8 @@ pub const CONDITIONAL_CALLBACK_ID: TypeId = TypeId::new(37);
 pub const MAP_CALLBACK_ID: TypeId = TypeId::new(38);
 pub const VOID_CALLBACK_ID: TypeId = TypeId::new(39);
 pub const FETCH_ID: TypeId = TypeId::new(40);
-pub const NUM_PREDEFINED_TYPES: usize = 41; // Must be one more than the highest `TypeId` above.
+pub const READONLY_ID: TypeId = TypeId::new(41);
+pub const NUM_PREDEFINED_TYPES: usize = 42; // Must be one more than the highest `TypeId` above.
 
 pub const GLOBAL_UNKNOWN_ID: ResolvedTypeId = ResolvedTypeId::new(GLOBAL_LEVEL, UNKNOWN_ID);
 pub const GLOBAL_UNDEFINED_ID: ResolvedTypeId = ResolvedTypeId::new(GLOBAL_LEVEL, UNDEFINED_ID);
@@ -110,6 +111,7 @@ pub const GLOBAL_TYPEOF_OPERATOR_RETURN_UNION_ID: ResolvedTypeId =
 pub const GLOBAL_T_ID: ResolvedTypeId = ResolvedTypeId::new(GLOBAL_LEVEL, T_ID);
 pub const GLOBAL_U_ID: ResolvedTypeId = ResolvedTypeId::new(GLOBAL_LEVEL, U_ID);
 pub const GLOBAL_FETCH_ID: ResolvedTypeId = ResolvedTypeId::new(GLOBAL_LEVEL, FETCH_ID);
+pub const GLOBAL_READONLY_ID: ResolvedTypeId = ResolvedTypeId::new(GLOBAL_LEVEL, READONLY_ID);
 
 /// Returns a string for formatting global IDs in test snapshots.
 pub fn global_type_name(id: TypeId) -> &'static str {
@@ -158,6 +160,8 @@ pub fn global_type_name(id: TypeId) -> &'static str {
         38 => "<U>(item: T) => U",
         39 => "() => void",
         40 => "fetch",
+        41 => "Readonly",
+        // TODO: Support other utility types
         _ => "inferred type",
     }
 }
@@ -373,6 +377,13 @@ impl Default for GlobalsResolver {
                 parameters: Default::default(),
                 return_type: ReturnType::Type(GLOBAL_INSTANCEOF_PROMISE_ID.into()),
             }),
+            TypeData::Class(Box::new(Class {
+                name: Some(Text::new_static("Readonly")),
+                type_parameters: Box::new([TypeReference::from(GLOBAL_T_ID)]),
+                extends: None,
+                implements: [].into(),
+                members: Box::new([]),
+            })),
         ];
 
         let types: Vec<_> = types.into_iter().map(Arc::new).collect();
@@ -454,6 +465,8 @@ impl TypeResolver for GlobalsResolver {
             Some(GLOBAL_ARRAY_ID)
         } else if qualifier.is_promise() && !qualifier.has_known_type_parameters() {
             Some(GLOBAL_PROMISE_ID)
+        } else if qualifier.is_readonly() && !qualifier.has_known_type_parameters() {
+            Some(GLOBAL_READONLY_ID)
         } else if !qualifier.type_only
             && let Some(ident) = qualifier.path.identifier()
         {

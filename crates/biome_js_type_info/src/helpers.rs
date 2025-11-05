@@ -11,7 +11,7 @@ use crate::{
     BindingId, Class, Interface, Intersection, Module, Namespace, Object, Resolvable,
     ResolvedTypeData, ResolvedTypeId, ResolvedTypeMember, ResolverId, Type, TypeData, TypeInstance,
     TypeMember, TypeReference, TypeResolver, Union,
-    globals::{GLOBAL_ARRAY_ID, GLOBAL_PROMISE_ID, GLOBAL_TYPE_MEMBERS},
+    globals::{GLOBAL_ARRAY_ID, GLOBAL_PROMISE_ID, GLOBAL_READONLY_ID, GLOBAL_TYPE_MEMBERS},
 };
 
 impl<'a> ResolvedTypeData<'a> {
@@ -204,6 +204,32 @@ impl<'a> ResolvedTypeData<'a> {
     /// Returns whether this type is an instance of a `Promise`.
     pub fn is_promise_instance(self, resolver: &dyn TypeResolver) -> bool {
         self.is_instance_of(resolver, GLOBAL_PROMISE_ID)
+    }
+
+    /// Unwraps a Readonly<T> wrapper and returns the inner type T.
+    /// If the type is not a Readonly wrapper, returns the original type.
+    pub fn unwrap_readonly(self, resolver: &'a dyn TypeResolver) -> ResolvedTypeData<'a> {
+        match self.as_raw_data() {
+            TypeData::InstanceOf(instance) => {
+                // Check if this is an instance of Readonly by comparing the type reference
+                let ty_ref = self.apply_module_id_to_reference(&instance.ty);
+
+                // Check if ty_ref resolves to GLOBAL_READONLY_ID
+                if let Some(resolved_id) = resolver.resolve_reference(&ty_ref) {
+                    if resolved_id == GLOBAL_READONLY_ID {
+                        // If it's Readonly, get the first type parameter (T)
+                        if let Some(first_param) = instance.type_parameters.first() {
+                            let param_ref = self.apply_module_id_to_reference(first_param);
+                            if let Some(inner) = resolver.resolve_and_get(&param_ref) {
+                                return inner;
+                            }
+                        }
+                    }
+                }
+                self
+            }
+            _ => self,
+        }
     }
 
     /// Returns a reference to the type's prototype, if any.

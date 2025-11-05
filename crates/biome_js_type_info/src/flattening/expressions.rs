@@ -232,6 +232,8 @@ pub(super) fn flattened_expression(
         }
         TypeofExpression::StaticMember(expr) => {
             let object = resolver.resolve_and_get(&expr.object)?;
+            // Unwrap Readonly<T> to get the inner type T
+            let object = object.unwrap_readonly(resolver);
             match object.as_raw_data() {
                 class @ TypeData::Class(_) => {
                     let member = class

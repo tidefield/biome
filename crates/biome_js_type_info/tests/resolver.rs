@@ -226,3 +226,25 @@ pub fn get_expression_statement(root: &AnyJsRoot) -> JsExpressionStatement {
         })
         .expect("cannot find expression statement")
 }
+
+#[test]
+fn infer_resolved_type_of_readonly_object() {
+    const CODE: &str = r#"const obj: Readonly<{ field: () => Promise<void> }> = { name: () => new Promise.resolve() };"#;
+
+    let root = parse_ts(CODE);
+    let decl = get_variable_declaration(&root);
+    let mut resolver = GlobalsResolver::default();
+    let bindings = TypeData::typed_bindings_from_js_variable_declaration(
+        &mut resolver,
+        ScopeId::GLOBAL,
+        &decl,
+    );
+    resolver.resolve_all();
+
+    assert_typed_bindings_snapshot(
+        CODE,
+        &bindings,
+        &resolver,
+        "infer_resolved_type_of_readonly_object",
+    );
+}
