@@ -1,4 +1,4 @@
-use crate::globals::global_type_name;
+use crate::globals::{global_type_name, infer_generated_type_id};
 use crate::{
     CallArgumentType, Class, DestructureField, Function, FunctionParameter,
     FunctionParameterBinding, GenericTypeParameter, ImportSymbol, Interface, Literal,
@@ -589,6 +589,12 @@ impl Format<FormatTypeContext> for TypeReference {
                 let level = resolved.level();
                 let id = resolved.id();
                 if level == TypeResolverLevel::Global {
+                    let id = if infer_generated_type_id(id).index() < NUM_PREDEFINED_TYPES {
+                        infer_generated_type_id(id)
+                    } else {
+                        id
+                    };
+
                     if resolved.index() < NUM_PREDEFINED_TYPES {
                         write!(f, [token(global_type_name(id))])
                     } else {

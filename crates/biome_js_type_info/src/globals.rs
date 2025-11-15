@@ -17,6 +17,8 @@ use crate::{
     TypeResolver, TypeResolverLevel, TypeStore, Union, flattening::MAX_FLATTEN_DEPTH,
 };
 
+use crate::generated_globals::{ARRAY_ID, GLOBAL_ARRAY_ID, GLOBAL_PROMISE_ID, PROMISE_ID};
+
 pub(super) const GLOBAL_LEVEL: TypeResolverLevel = TypeResolverLevel::Global;
 pub(super) const GLOBAL_RESOLVER_ID: ResolverId = ResolverId::from_level(GLOBAL_LEVEL);
 
@@ -41,13 +43,11 @@ pub const NUMBER_ID: TypeId = TypeId::new(4);
 pub const STRING_ID: TypeId = TypeId::new(5);
 pub const INSTANCEOF_ARRAY_T_ID: TypeId = TypeId::new(6);
 pub const INSTANCEOF_ARRAY_U_ID: TypeId = TypeId::new(7);
-pub const ARRAY_ID: TypeId = TypeId::new(8);
 pub const ARRAY_FILTER_ID: TypeId = TypeId::new(9);
 pub const ARRAY_FOREACH_ID: TypeId = TypeId::new(10);
 pub const ARRAY_MAP_ID: TypeId = TypeId::new(11);
 pub const GLOBAL_ID: TypeId = TypeId::new(12);
 pub const INSTANCEOF_PROMISE_ID: TypeId = TypeId::new(13);
-pub const PROMISE_ID: TypeId = TypeId::new(14);
 pub const PROMISE_CONSTRUCTOR_ID: TypeId = TypeId::new(15);
 pub const PROMISE_CATCH_ID: TypeId = TypeId::new(16);
 pub const PROMISE_FINALLY_ID: TypeId = TypeId::new(17);
@@ -82,11 +82,9 @@ pub const GLOBAL_VOID_ID: ResolvedTypeId = ResolvedTypeId::new(GLOBAL_LEVEL, VOI
 pub const GLOBAL_CONDITIONAL_ID: ResolvedTypeId = ResolvedTypeId::new(GLOBAL_LEVEL, CONDITIONAL_ID);
 pub const GLOBAL_NUMBER_ID: ResolvedTypeId = ResolvedTypeId::new(GLOBAL_LEVEL, NUMBER_ID);
 pub const GLOBAL_STRING_ID: ResolvedTypeId = ResolvedTypeId::new(GLOBAL_LEVEL, STRING_ID);
-pub const GLOBAL_ARRAY_ID: ResolvedTypeId = ResolvedTypeId::new(GLOBAL_LEVEL, ARRAY_ID);
 pub const GLOBAL_GLOBAL_ID /* :smirk: */: ResolvedTypeId = ResolvedTypeId::new(GLOBAL_LEVEL, GLOBAL_ID);
 pub const GLOBAL_INSTANCEOF_PROMISE_ID: ResolvedTypeId =
     ResolvedTypeId::new(GLOBAL_LEVEL, INSTANCEOF_PROMISE_ID);
-pub const GLOBAL_PROMISE_ID: ResolvedTypeId = ResolvedTypeId::new(GLOBAL_LEVEL, PROMISE_ID);
 pub const GLOBAL_PROMISE_CONSTRUCTOR_ID: ResolvedTypeId =
     ResolvedTypeId::new(GLOBAL_LEVEL, PROMISE_CONSTRUCTOR_ID);
 pub const GLOBAL_BIGINT_STRING_LITERAL_ID: ResolvedTypeId =
@@ -110,6 +108,17 @@ pub const GLOBAL_TYPEOF_OPERATOR_RETURN_UNION_ID: ResolvedTypeId =
 pub const GLOBAL_T_ID: ResolvedTypeId = ResolvedTypeId::new(GLOBAL_LEVEL, T_ID);
 pub const GLOBAL_U_ID: ResolvedTypeId = ResolvedTypeId::new(GLOBAL_LEVEL, U_ID);
 pub const GLOBAL_FETCH_ID: ResolvedTypeId = ResolvedTypeId::new(GLOBAL_LEVEL, FETCH_ID);
+
+// Remove this redirection after all hardcoded global types are migrated out
+pub fn infer_generated_type_id(id: TypeId) -> TypeId {
+    match id {
+        ARRAY_ID => TypeId::new(8),    // Array
+        NUMBER_ID => TypeId::new(4),   // Number
+        STRING_ID => TypeId::new(5),   // String
+        PROMISE_ID => TypeId::new(14), // Promise
+        _ => TypeId::new(usize::MAX),
+    }
+}
 
 /// Returns a string for formatting global IDs in test snapshots.
 pub fn global_type_name(id: TypeId) -> &'static str {
@@ -158,7 +167,8 @@ pub fn global_type_name(id: TypeId) -> &'static str {
         38 => "<U>(item: T) => U",
         39 => "() => void",
         40 => "fetch",
-        _ => "inferred type",
+        usize::MAX => "inferred type",
+        _ => global_type_name(infer_generated_type_id(id)),
     }
 }
 
@@ -231,6 +241,7 @@ impl Default for GlobalsResolver {
                 ty: TypeReference::from(GLOBAL_ARRAY_ID),
                 type_parameters: [GLOBAL_U_ID.into()].into(),
             }),
+            // REMOVE LATER
             TypeData::Class(Box::new(Class {
                 name: Some(Text::new_static("Array")),
                 type_parameters: Box::new([TypeReference::from(GLOBAL_T_ID)]),
