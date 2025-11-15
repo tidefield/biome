@@ -22,6 +22,10 @@ use crate::generate_license::generate_license;
 use crate::generate_migrate_eslint::generate_migrate_eslint;
 use crate::move_rule::move_rule;
 
+#[cfg(feature = "schema")]
+// mod generate_global_types;
+use xtask_codegen::generate_global_types::generate_global_types;
+
 use xtask_codegen::{
     TaskCommand, generate_analyzer, generate_analyzer_rule_options, generate_ast,
     generate_formatters, generate_new_analyzer_rule, generate_tables, task_command,
@@ -56,6 +60,10 @@ fn main() -> Result<()> {
         TaskCommand::Bindings => {
             #[cfg(feature = "schema")]
             generate_workspace_bindings(Overwrite)?;
+        }
+        TaskCommand::GlobalTypes => {
+            #[cfg(feature = "schema")]
+            generate_global_types()?;
         }
         TaskCommand::License => {
             #[cfg(feature = "license")]

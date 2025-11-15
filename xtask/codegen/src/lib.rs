@@ -25,6 +25,9 @@ mod yaml_kinds_src;
 #[cfg(feature = "schema")]
 pub mod generate_schema;
 
+#[cfg(feature = "schema")]
+pub mod generate_global_types;
+
 mod html_kinds_src;
 mod kind_src;
 mod language_kind;
@@ -102,6 +105,8 @@ pub enum TaskCommand {
     /// Generate the JSON schema for the Biome configuration file format
     #[bpaf(command)]
     Schema,
+    #[bpaf(command)]
+    GlobalTypes,
     /// Generate TypeScript definitions for the JavaScript bindings to the Workspace API
     #[bpaf(command)]
     Bindings,
