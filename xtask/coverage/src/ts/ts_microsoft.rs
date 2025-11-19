@@ -13,11 +13,10 @@ use std::convert::TryFrom;
 use std::fmt::Write;
 use std::io;
 use std::path::Path;
-use std::process::Command;
-use xtask_glue::project_root;
+use xtask_glue::repo::{Repo, RepoName};
 
-const CASES_PATH: &str = "xtask/coverage/Typescript/tests/cases";
-const REFERENCE_PATH: &str = "xtask/coverage/Typescript/tests/baselines/reference";
+const CASES_PATH: &str = "xtask/glue/Typescript/tests/cases";
+const REFERENCE_PATH: &str = "xtask/glue/Typescript/tests/baselines/reference";
 
 #[derive(Debug)]
 struct MicrosoftTypeScriptTestCase {
@@ -103,22 +102,7 @@ impl TestSuite for MicrosoftTypescriptTestSuite {
     }
 
     fn checkout(&self) -> io::Result<()> {
-        let base_path = project_root().join("xtask/coverage/Typescript");
-        let mut command = Command::new("git");
-        command
-            .arg("clone")
-            .arg("https://github.com/microsoft/Typescript.git")
-            .arg("--depth")
-            .arg("1")
-            .arg(base_path.display().to_string());
-        command.output()?;
-        let mut command = Command::new("git");
-        command
-            .arg("reset")
-            .arg("--hard")
-            .arg("61a96b1641abe24c4adc3633eb936df89eb991f2");
-        command.output()?;
-        Ok(())
+        Repo::new(RepoName::Typescript, Some(1)).checkout()
     }
 }
 

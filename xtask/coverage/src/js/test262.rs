@@ -8,11 +8,20 @@ use biome_rowan::syntax::SyntaxKind;
 use regex::Regex;
 use serde::Deserialize;
 use std::io;
-use std::path::Path;
-use std::process::Command;
-use xtask_glue::project_root;
+use std::path::{Path, PathBuf};
+use std::sync::OnceLock;
+use xtask_glue::repo::{Repo, RepoName};
 
-const BASE_PATH: &str = "xtask/coverage/test262/test";
+fn test262_repo_root() -> &'static Path {
+    RepoName::Test262.checkout_dir()
+}
+
+fn cases_path() -> &'static Path {
+    static CASES: OnceLock<PathBuf> = OnceLock::new();
+    CASES
+        .get_or_init(|| test262_repo_root().join("test"))
+        .as_path()
+}
 
 /// Representation of the YAML metadata in Test262 tests.
 // taken from the boa project
@@ -80,7 +89,11 @@ struct Test262TestCase {
 
 impl Test262TestCase {
     fn new(path: &Path, code: String, meta: MetaData) -> Self {
-        let name = path.strip_prefix(BASE_PATH).unwrap().display().to_string();
+        let name = path
+            .strip_prefix(cases_path())
+            .unwrap()
+            .display()
+            .to_string();
 
         Self { name, code, meta }
     }
@@ -155,26 +168,11 @@ impl TestSuite for Test262TestSuite {
     }
 
     fn base_path(&self) -> &str {
-        BASE_PATH
+        cases_path().to_str().unwrap()
     }
 
     fn checkout(&self) -> io::Result<()> {
-        let base_path = project_root().join(BASE_PATH);
-        let mut command = Command::new("git");
-        command
-            .arg("clone")
-            .arg("https://github.com/tc39/test262.git")
-            .arg("--depth")
-            .arg("1")
-            .arg(base_path.display().to_string());
-        command.output()?;
-        let mut command = Command::new("git");
-        command
-            .arg("reset")
-            .arg("--hard")
-            .arg("715dd1073bc060f4ee221e2e74770f5728e7b8a0");
-        command.output()?;
-        Ok(())
+        Repo::new(RepoName::Test262, Some(1)).checkout()
     }
 
     fn is_test(&self, path: &Path) -> bool {

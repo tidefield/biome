@@ -7,11 +7,18 @@ use biome_js_parser::JsParserOptions;
 use biome_js_syntax::{JsFileSource, LanguageVariant};
 use biome_rowan::SyntaxKind;
 use std::io;
-use std::path::Path;
-use std::process::Command;
-use xtask_glue::project_root;
+use std::path::{Path, PathBuf};
+use std::sync::OnceLock;
+use xtask_glue::repo::{Repo, RepoName};
 
-const CASES_PATH: &str = "xtask/coverage/babel/packages/babel-parser/test/fixtures/typescript";
+const CASES_RELATIVE_PATH: &str = "packages/babel-parser/test/fixtures/typescript";
+
+fn cases_path() -> &'static Path {
+    static CASES: OnceLock<PathBuf> = OnceLock::new();
+    CASES
+        .get_or_init(|| RepoName::Babel.checkout_dir().join(CASES_RELATIVE_PATH))
+        .as_path()
+}
 
 struct BabelTypescriptTestCase {
     name: String,
@@ -25,7 +32,7 @@ impl BabelTypescriptTestCase {
         let name = path
             .parent()
             .unwrap()
-            .strip_prefix(CASES_PATH)
+            .strip_prefix(cases_path())
             .unwrap()
             .display()
             .to_string();
@@ -89,27 +96,11 @@ impl TestSuite for BabelTypescriptTestSuite {
     }
 
     fn base_path(&self) -> &str {
-        CASES_PATH
+        cases_path().to_str().unwrap()
     }
 
     fn checkout(&self) -> io::Result<()> {
-        let base_path = project_root().join("xtask/coverage/babel");
-        let mut command = Command::new("git");
-        command
-            .arg("clone")
-            .arg("https://github.com/babel/babel.git")
-            .arg("--depth")
-            .arg("1")
-            .arg(base_path.display().to_string());
-        command.output()?;
-        let mut command = Command::new("git");
-        command
-            .arg("reset")
-            .arg("--hard")
-            .arg("33a6be4e56b149647c15fd6c0157c1413456851d");
-        command.output()?;
-
-        Ok(())
+        Repo::new(RepoName::Babel, Some(1)).checkout()
     }
 
     fn is_test(&self, path: &std::path::Path) -> bool {

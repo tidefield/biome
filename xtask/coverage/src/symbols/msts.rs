@@ -10,12 +10,19 @@ use std::collections::HashSet;
 use std::fmt::Write;
 use std::io;
 use std::path::{Path, PathBuf};
-use std::process::Command;
-use std::str::FromStr;
-use xtask_glue::project_root;
+use std::sync::OnceLock;
+use xtask_glue::repo::{Repo, RepoName};
 
-const CASES_PATH: &str = "xtask/coverage/Typescript/tests/baselines/reference";
-const BASE_PATH: &str = "xtask/coverage/Typescript";
+fn typescript_repo_root() -> &'static Path {
+    RepoName::Typescript.checkout_dir()
+}
+
+fn cases_path() -> &'static Path {
+    static CASES: OnceLock<PathBuf> = OnceLock::new();
+    CASES
+        .get_or_init(|| typescript_repo_root().join("tests/cases"))
+        .as_path()
+}
 
 #[derive(Debug)]
 struct SymbolsMicrosoftTestCase {
@@ -42,7 +49,7 @@ impl TestCase for SymbolsMicrosoftTestCase {
         let symbols = check_file_encoding(&self.path).unwrap();
         let expected = load_symbols_file(&symbols);
 
-        let mut full_path = PathBuf::from_str(BASE_PATH).unwrap();
+        let mut full_path = typescript_repo_root().to_path_buf();
         full_path.push(expected.code_file);
 
         // Some .symbols files point to .ts files that do no exist.
@@ -180,7 +187,7 @@ impl TestSuite for SymbolsMicrosoftTestSuite {
     }
 
     fn base_path(&self) -> &str {
-        CASES_PATH
+        cases_path().to_str().unwrap()
     }
 
     fn is_test(&self, path: &Path) -> bool {
@@ -195,23 +202,8 @@ impl TestSuite for SymbolsMicrosoftTestSuite {
     }
 
     fn checkout(&self) -> io::Result<()> {
-        let base_path = project_root().join(BASE_PATH);
-        let mut command = Command::new("git");
-        command
-            .arg("clone")
-            .arg("https://github.com/microsoft/Typescript.git")
-            .arg("--depth")
-            .arg("1")
-            .arg(base_path.display().to_string());
-        command.output()?;
-        let mut command = Command::new("git");
-        command
-            .arg("reset")
-            .arg("--hard")
-            .arg("61a96b1641abe24c4adc3633eb936df89eb991f2");
-        command.output()?;
-
-        Ok(())
+        // let base_path = project_root().join(BASE_PATH);
+        Repo::new(RepoName::Typescript, Some(1)).checkout()
     }
 
     fn load_test(&self, path: &Path) -> Option<Box<dyn TestCase>> {

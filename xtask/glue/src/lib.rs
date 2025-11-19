@@ -1,11 +1,14 @@
 //! Codegen tools mostly used to generate ast and syntax definitions. Adapted from rust analyzer's codegen
 
 pub mod glue;
+pub mod repo;
 
 use std::{
     env,
     fmt::Display,
+    io,
     path::{Path, PathBuf},
+    process::Command,
     sync::OnceLock,
 };
 
@@ -97,6 +100,43 @@ pub fn ensure_rustfmt() -> Result<()> {
     }
 
     IS_RUSTFMT_CHECKED.get_or_init(|| ());
+
+    Ok(())
+}
+
+pub fn checkout_repository(
+    destination: impl AsRef<Path>,
+    repo_url: &str,
+    revision: &str,
+    depth: Option<u32>,
+) -> io::Result<()> {
+    let destination = destination.as_ref();
+
+    if !destination.exists() {
+        let mut command = Command::new("git");
+
+        command
+            .arg("clone")
+            .arg(repo_url)
+            .arg(destination)
+            .arg("--revision")
+            .arg(revision);
+
+        if let Some(depth) = depth {
+            command.arg("--depth").arg(depth.to_string());
+        }
+
+        let output = command.output()?;
+        if !output.status.success() {
+            return Err(io::Error::new(
+                io::ErrorKind::Other,
+                format!(
+                    "failed to clone {repo_url}: {}",
+                    String::from_utf8_lossy(&output.stderr)
+                ),
+            ));
+        }
+    }
 
     Ok(())
 }
