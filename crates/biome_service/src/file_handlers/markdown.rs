@@ -1,4 +1,3 @@
-
 use biome_markdown_formatter::context::MarkdownFormatOptions;
 use biome_markdown_syntax::MarkdownLanguage;
 
