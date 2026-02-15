@@ -1,7 +1,7 @@
 pub struct MarkdownFileSource {}
 
 impl MarkdownFileSource {
-    pub fn new(path: &str) -> Self {
+    pub fn new(_path: &str) -> Self {
         Self {}
     }
 }

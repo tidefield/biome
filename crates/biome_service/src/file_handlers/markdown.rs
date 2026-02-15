@@ -1,4 +1,3 @@
-use std::fmt;
 
 use biome_markdown_formatter::context::MarkdownFormatOptions;
 use biome_markdown_syntax::MarkdownLanguage;
@@ -42,64 +41,64 @@ impl ServiceLanguage for MarkdownLanguage {
     type EnvironmentSettings = MarkdownEnvironmentSettings;
 
     fn lookup_settings(
-        languages: &crate::settings::LanguageListSettings,
+        _languages: &crate::settings::LanguageListSettings,
     ) -> &crate::settings::LanguageSettings<Self> {
         todo!()
     }
 
     fn resolve_environment(
-        settings: &crate::settings::Settings,
+        _settings: &crate::settings::Settings,
     ) -> Option<&Self::EnvironmentSettings> {
         todo!()
     }
 
     fn resolve_parse_options(
-        overrides: &crate::settings::OverrideSettings,
-        language: &Self::ParserSettings,
-        path: &biome_fs::BiomePath,
-        file_source: &super::DocumentFileSource,
+        _overrides: &crate::settings::OverrideSettings,
+        _language: &Self::ParserSettings,
+        _path: &biome_fs::BiomePath,
+        _file_source: &super::DocumentFileSource,
     ) -> Self::ParserOptions {
         todo!()
     }
 
     fn resolve_format_options(
-        global: &crate::settings::FormatSettings,
-        overrides: &crate::settings::OverrideSettings,
-        language: &Self::FormatterSettings,
-        path: &biome_fs::BiomePath,
-        file_source: &super::DocumentFileSource,
+        _global: &crate::settings::FormatSettings,
+        _overrides: &crate::settings::OverrideSettings,
+        _language: &Self::FormatterSettings,
+        _path: &biome_fs::BiomePath,
+        _file_source: &super::DocumentFileSource,
     ) -> Self::FormatOptions {
         todo!()
     }
 
     fn resolve_analyzer_options(
-        global: &crate::settings::Settings,
-        language: &Self::LinterSettings,
-        environment: Option<&Self::EnvironmentSettings>,
-        path: &biome_fs::BiomePath,
-        file_source: &super::DocumentFileSource,
-        suppression_reason: Option<&str>,
+        _global: &crate::settings::Settings,
+        _language: &Self::LinterSettings,
+        _environment: Option<&Self::EnvironmentSettings>,
+        _path: &biome_fs::BiomePath,
+        _file_source: &super::DocumentFileSource,
+        _suppression_reason: Option<&str>,
     ) -> biome_analyze::AnalyzerOptions {
         todo!()
     }
 
     fn linter_enabled_for_file_path(
-        settings: &crate::settings::Settings,
-        path: &camino::Utf8Path,
+        _settings: &crate::settings::Settings,
+        _path: &camino::Utf8Path,
     ) -> bool {
         todo!()
     }
 
     fn formatter_enabled_for_file_path(
-        settings: &crate::settings::Settings,
-        path: &camino::Utf8Path,
+        _settings: &crate::settings::Settings,
+        _path: &camino::Utf8Path,
     ) -> bool {
         todo!()
     }
 
     fn assist_enabled_for_file_path(
-        settings: &crate::settings::Settings,
-        path: &camino::Utf8Path,
+        _settings: &crate::settings::Settings,
+        _path: &camino::Utf8Path,
     ) -> bool {
         todo!()
     }
