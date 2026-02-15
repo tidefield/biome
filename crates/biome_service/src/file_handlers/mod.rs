@@ -68,6 +68,7 @@ pub(crate) mod html;
 mod ignore;
 pub(crate) mod javascript;
 pub(crate) mod json;
+pub(crate) mod markdown;
 pub mod svelte;
 mod unknown;
 pub mod vue;
